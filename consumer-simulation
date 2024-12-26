@@ -1,0 +1,55 @@
+from vpython import *
+import random
+
+# Set up the scene
+scene.background = vector(0.1, 0.1, 0.1)
+scene.title = "Consumer Behavior Simulation"
+
+# Create products
+product1 = sphere(pos=vector(-5, 0, 0), radius=0.5, color=color.green)
+product2 = sphere(pos=vector(5, 0, 0), radius=0.5, color=color.orange)
+
+# Marketability factors (attraction levels)
+marketability1 = 1.0  # Higher value means more attraction
+marketability2 = 0.5
+
+# Create consumers
+num_consumers = 20
+consumers = []
+for i in range(num_consumers):
+    consumer = sphere(
+        pos=vector(random.uniform(-10, 10), random.uniform(-10, 10), 0),
+        radius=0.2,
+        color=color.blue
+    )
+    consumer.speed = vector(0, 0, 0)
+    consumer.preference = random.uniform(0, 1)  # Random preference for products
+    consumers.append(consumer)
+
+# Simulation loop
+while True:
+    rate(30)  # Limit to 30 frames per second
+    for consumer in consumers:
+        # Calculate attraction to each product
+        direction1 = product1.pos - consumer.pos
+        direction2 = product2.pos - consumer.pos
+        distance1 = mag(direction1)
+        distance2 = mag(direction2)
+
+        # Normalize directions
+        direction1_hat = norm(direction1) if distance1 > 0 else vector(0, 0, 0)
+        direction2_hat = norm(direction2) if distance2 > 0 else vector(0, 0, 0)
+
+        # Calculate movement based on preferences and marketability
+        move_toward1 = marketability1 * (1 - consumer.preference) / distance1**2
+        move_toward2 = marketability2 * consumer.preference / distance2**2
+
+        consumer.pos += direction1_hat * move_toward1 + direction2_hat * move_toward2
+
+        # Change color based on proximity to products
+        if distance1 < 1:
+            consumer.color = color.green
+        elif distance2 < 1:
+            consumer.color = color.orange
+        else:
+            consumer.color = color.blue
